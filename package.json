@@ -1,0 +1,34 @@
+{
+  "name": "@deepgram/bun-text-intelligence",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Text Intelligence starter app using Deepgram's Read API for summarization, topics, sentiment, and intent analysis - powered by Bun",
+  "main": "server.ts",
+  "scripts": {
+    "start": "bun run server.ts",
+    "start-backend": "bun --watch run server.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepgram-starters/bun-text-intelligence.git"
+  },
+  "keywords": [
+    "text-intelligence",
+    "deepgram",
+    "summarization",
+    "sentiment-analysis",
+    "bun",
+    "typescript"
+  ],
+  "author": "Deepgram DX Team <devrel@deepgram.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/deepgram-starters/bun-text-intelligence/issues"
+  },
+  "homepage": "https://github.com/deepgram-starters/bun-text-intelligence#readme",
+  "dependencies": {
+    "@deepgram/sdk": "4.11.3",
+    "@iarna/toml": "2.2.5",
+    "jose": "5.9.6"
+  }
+}
