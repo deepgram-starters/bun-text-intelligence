@@ -14,7 +14,7 @@
  * - No external web framework needed
  */
 
-import { createClient } from "@deepgram/sdk";
+import { DeepgramClient } from "@deepgram/sdk";
 import { parse as parseTOML } from "@iarna/toml";
 import { readFileSync } from "fs";
 import { SignJWT, jwtVerify } from "jose";
@@ -108,7 +108,7 @@ const apiKey = loadApiKey();
 // SETUP - Initialize Deepgram client
 // ============================================================================
 
-const deepgram = createClient(apiKey);
+const deepgram = new DeepgramClient({ apiKey });
 
 // ============================================================================
 // CORS CONFIGURATION
@@ -373,27 +373,8 @@ async function handleAnalysis(req: Request): Promise<Response> {
     const intents = url.searchParams.get("intents");
     if (intents === "true") options.intents = true;
 
-    // Call Deepgram API (SDK v4 returns { result, error })
-    const { result, error } = await deepgram.read.analyzeText(
-      { text: textContent },
-      options
-    );
-
-    // Handle SDK errors
-    if (error) {
-      console.error("Deepgram API Error:", error);
-      return new Response(
-        JSON.stringify({
-          error: {
-            type: "processing_error",
-            code: "INVALID_TEXT",
-            message: error.message || "Failed to process text",
-            details: {},
-          },
-        }),
-        { status: 400, headers }
-      );
-    }
+    // Call Deepgram API (SDK v5 throws on error)
+    const result = await deepgram.read.v1.text.analyze({ ...options, body: { text: textContent } });
 
     // Return full results object (includes all requested features)
     return new Response(
