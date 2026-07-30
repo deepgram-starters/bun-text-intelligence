@@ -14,7 +14,7 @@
  * - No external web framework needed
  */
 
-import { createClient } from "@deepgram/sdk";
+import { DeepgramClient } from "@deepgram/sdk";
 import { parse as parseTOML } from "@iarna/toml";
 import { readFileSync } from "fs";
 import { SignJWT, jwtVerify } from "jose";
@@ -108,7 +108,26 @@ const apiKey = loadApiKey();
 // SETUP - Initialize Deepgram client
 // ============================================================================
 
-const deepgram = createClient(apiKey);
+// Support DEEPGRAM_BASE_URL (e.g. a staging host) via the SDK `environment`
+// option; falls back to the production endpoint when unset.
+const baseUrl = process.env.DEEPGRAM_BASE_URL;
+const deepgram = new DeepgramClient({
+  apiKey,
+  ...(baseUrl
+    ? {
+        environment: {
+          base: baseUrl
+            .replace(/^wss:\/\//, "https://")
+            .replace(/^ws:\/\//, "http://"),
+          production: baseUrl,
+          agent: baseUrl,
+          agentRest: baseUrl
+            .replace(/^wss:\/\//, "https://")
+            .replace(/^ws:\/\//, "http://"),
+        },
+      }
+    : {}),
+});
 
 // ============================================================================
 // CORS CONFIGURATION
@@ -373,27 +392,12 @@ async function handleAnalysis(req: Request): Promise<Response> {
     const intents = url.searchParams.get("intents");
     if (intents === "true") options.intents = true;
 
-    // Call Deepgram API (SDK v4 returns { result, error })
-    const { result, error } = await deepgram.read.analyzeText(
-      { text: textContent },
-      options
-    );
-
-    // Handle SDK errors
-    if (error) {
-      console.error("Deepgram API Error:", error);
-      return new Response(
-        JSON.stringify({
-          error: {
-            type: "processing_error",
-            code: "INVALID_TEXT",
-            message: error.message || "Failed to process text",
-            details: {},
-          },
-        }),
-        { status: 400, headers }
-      );
-    }
+    // Call Deepgram API. The v5 SDK returns the result directly and throws on
+    // error (handled by the surrounding try/catch → formatErrorResponse).
+    const result = await deepgram.read.v1.text.analyze({
+      body: { text: textContent },
+      ...options,
+    });
 
     // Return full results object (includes all requested features)
     return new Response(

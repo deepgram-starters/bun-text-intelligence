@@ -6,7 +6,7 @@ repository = "https://github.com/deepgram-starters/bun-text-intelligence"
 useCase = "text-intelligence"
 language = "typescript"
 framework = "bun"
-sdk = "4.11.3"
+sdk = "@deepgram/sdk"
 tags = ["text-intelligence", "text-analysis", "nlp", "natural-language-processing", "typescript", "bun"]
 
 [check]
