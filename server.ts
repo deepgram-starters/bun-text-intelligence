@@ -406,6 +406,12 @@ async function handleAnalysis(req: Request): Promise<Response> {
     );
   } catch (err) {
     console.error("Analysis error:", err);
+    // Deepgram v5 SDK throws on non-2xx responses. A 400 from Deepgram (e.g.
+    // invalid text) must surface to the client as a 400 with an INVALID_TEXT
+    // classification — not a generic 500/ANALYSIS_FAILED.
+    const statusCode = (err as { statusCode?: number })?.statusCode;
+    if (statusCode === 400)
+      return formatErrorResponse(err as Error, 400, "INVALID_TEXT", "processing_error");
     return formatErrorResponse(err as Error);
   }
 }
